@@ -3,19 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// queue implementation
+// queue type and function declarations
 
-int currentX = 0;
-int currentY = 0;
-Heading currentHeading = NORTH;
-
-struct coord
-{
+typedef struct coord {
     int x;
     int y;
-};
+} coord;
 
-typedef struct coord item_type;
+typedef coord item_type;
 typedef struct _queue* queue;
 queue queue_create();
 void queue_destroy(queue q);
@@ -26,10 +21,13 @@ int queue_is_empty(queue q);
 int queue_size(queue q);
 void queue_clear(queue q);
 
+// queue type implentations
+
 struct node {
     item_type data;
     struct node* next;
 };
+
 struct _queue {
     struct node* head;
     struct node* tail;
@@ -135,9 +133,18 @@ void queue_clear(queue q) {
     q->size = 0;
 }
 
-// change x and y sizes for the array. they may be wrong
+// global variable declarations and assignments
 
-int verticalWalls[17][16] =
+int currentX = 0;
+int currentY = 0;
+Heading currentHeading = NORTH;
+
+// watch out when looking at the following arrays, remember that in 2D text form:
+// x values are displayed vertically and y values are displayed horizontally.
+// in addition, the x values are displayed upside down compared to how they are displayed in
+// a graphing convention; here, x = 15 is at the bottom while x = 0 is at the top
+
+static int verticalWalls[17][16] =
 { // x = 0 and x = 16 are all walls
     { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -158,27 +165,28 @@ int verticalWalls[17][16] =
     { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 };
 
-int horizontalWalls[16][17] =
-{ // y = 0 and y = 16 are all walls
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
+static int horizontalWalls[16][17] =
+{ // y = 0 and y = 16 are all horizontal walls
+    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
 };
 
-int floodArray[16][16] =
+int floodArray[16][16];
+/* for reference, this is what initialization for a 16x16 maze with goal at the center looks like
 {
     {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
     {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
@@ -196,22 +204,28 @@ int floodArray[16][16] =
     {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
     {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
     {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}
-};
+}; */
 
-
-// This is an example of a simple left wall following algorithm.
-Action leftWallFollower() {
-    if(API_wallFront()) {
-        if(API_wallLeft()){
-            return RIGHT;
+void resetFloodArray()
+{
+    // set the entire flood array to blank values (-1)
+    for (int x = 0; x < 16; x++)
+    {
+        for (int y = 0; y < 16; y++)
+        {
+            floodArray[x][y] = -1;
         }
-        return LEFT;
     }
-    return FORWARD;
+    // set desired goal values (0). for regular competition, this is the center of the maze
+    floodArray[7][7] = 0;
+    floodArray[7][8] = 0;
+    floodArray[8][7] = 0;
+    floodArray[8][8] = 0;
+
 }
 
 // given heading and coordinates, check if there is a wall in front of the mouse
-int checkWall(Heading heading, struct coord c)
+int checkWall(Heading heading, coord c)
 {
     int x = c.x;
     int y = c.y;
@@ -228,13 +242,13 @@ int checkWall(Heading heading, struct coord c)
         case EAST:
             return verticalWalls[x+1][y];
     }
-    debug_log("invalid heading or array");
-    return 0;
+    // the program should ideally never return -1
+    return -1;
 }
 
 // given heaidng and coordinates, returns the floodfill value of the corresponding neighbor cell.
 // if the neighbor is off of the maze (argument cell is on the boundary of the maze), return -2
-int getNeighbor(Heading heading, struct coord c)
+int getNeighbor(Heading heading, coord c)
 {
     int x = c.x;
     int y = c.y;
@@ -266,7 +280,7 @@ int getNeighbor(Heading heading, struct coord c)
 // given heading and coordinates, check if the neighbor cell can be processed.
 // to be processed, the neighbor cell's floodfill value should be -1 and there should not 
 // be a wall in between the current cell and the neighborcell
-int checkAvailable(Heading heading, struct coord c)
+int checkAvailable(Heading heading, coord c)
 {
     // checks if there is a wall in the way
     if (checkWall(heading,c))
@@ -281,17 +295,21 @@ int checkAvailable(Heading heading, struct coord c)
 }
 
 // given coordinates, updates the respective cell's floodfill value
-void updateFloodFillCell(struct coord c, int val)
+void updateFloodFillCell(coord c, int val)
 {
     int x = c.x;
     int y = c.y;
     floodArray[x][y] = val;
 }
 
-// updates the floodfill array and returns best action
-Heading floodFill() {
+// updates the floodfill array based on known walls
+void floodFill() {
+    // set non-goal values to blank so that the floodfill array can be recalculated
+    resetFloodArray();
+
+    // declare/initialize relevant variables for queue for floodfill algorithm
     queue q = queue_create();
-    struct coord current;
+    coord current;
     int currentVal;
 
     // iterate through the 2D array, find goal values and add them to the queue
@@ -304,7 +322,6 @@ Heading floodFill() {
                 current.x = x;
                 current.y = y;
                 queue_push(q,current);
-                // I will be very sad if this passes current by reference instead of by value
             }
         }
     }
@@ -318,15 +335,14 @@ Heading floodFill() {
         char forSetText[4] = "";
         sprintf(forSetText, "%d", floodArray[current.x][current.y]);
         API_setText(current.x,current.y,forSetText);
-        // debug_log("printing");
 
-        struct coord neighbor;
+        coord neighbor;
         currentVal = floodArray[current.x][current.y];
 
-        // set all blank and accessible neighbors to current's value + 1
+        // set value of all available (blank and accessible) neighbors to current's value + 1
+        // and add available neighbors to queue
         if (checkAvailable(NORTH,current))
         {
-            // debug_log("can north");
             neighbor.x = current.x;
             neighbor.y = current.y + 1;
             queue_push(q,neighbor);
@@ -334,7 +350,6 @@ Heading floodFill() {
         }
         if (checkAvailable(WEST,current))
         {
-            // debug_log("can west");
             neighbor.x = current.x-1;
             neighbor.y = current.y;
             queue_push(q,neighbor);
@@ -342,7 +357,6 @@ Heading floodFill() {
         }
         if (checkAvailable(SOUTH,current))
         {
-            // debug_log("can south");
             neighbor.x = current.x;
             neighbor.y = current.y - 1;
             queue_push(q,neighbor);
@@ -350,154 +364,91 @@ Heading floodFill() {
         }
         if (checkAvailable(EAST,current))
         {
-            // debug_log("can east");
             neighbor.x = current.x + 1;
             neighbor.y = current.y;
             queue_push(q,neighbor);
             updateFloodFillCell(neighbor,currentVal+1);
         }
     }
+}
 
-    // done with updating the floodfill array, now it's time to determine which direction to move
+// places a wall in respective arrays and API at the given heading and coordinate
+void placeWall(Heading heading, coord c)
+{
+    int x = c.x;
+    int y = c.y;
+    char direction;
 
-    /*
-    current.x = currentX;
-    current.y = currentY;
-
-    // set minimum neighbor's floodfill value to very large number, expecting it to get overwritten later
-    int minNeighbor = 1000;
-    Heading minDirection;
-
-    // finds and returns the direction of the neighbor with the lowest floodfill value
-    if ((checkAvailable(NORTH,current)) && (floodArray[current.x][current.y + 1] < minNeighbor))
+    // sets a wall in the wall arrays
+    switch (heading)
     {
-        minNeighbor = floodArray[current.x][current.y + 1];
-        minDirection = NORTH;
+        case NORTH:
+            horizontalWalls[x][y+1] = 1;
+            direction = 'n';
+            break;
+        case WEST:
+            verticalWalls[x][y] = 1;
+            direction = 'w';
+            break;
+        case SOUTH:
+            horizontalWalls[x][y] = 1;
+            direction = 's';
+            break;
+        case EAST:
+            verticalWalls[x+1][y] = 1;
+            direction = 'e';
+            break;
     }
-    if ((checkAvailable(WEST,current)) && (floodArray[current.x - 1][current.y] < minNeighbor))
-    {
-        minNeighbor = floodArray[current.x - 1][current.y];
-        minDirection = WEST;
-    }
-    if ((checkAvailable(SOUTH,current)) && (floodArray[current.x][current.y - 1] < minNeighbor))
-    {
-        minNeighbor = floodArray[current.x][current.y - 1];
-        minDirection = SOUTH;
-    }
-    if ((checkAvailable(EAST,current)) && (floodArray[current.x + 1][current.y] < minNeighbor))
-    {
-        minNeighbor = floodArray[current.x + 1][current.y];
-        minDirection = EAST;
-    }    
-    return minDirection;
-    */
-   return NORTH;
+    // graphically places a wall onto the simulation window via the API
+    API_setWall(x,y,direction);
 }
 
 // checks for and then updates the walls for the current cell
 void updateWalls()
 {
     // looks at walls at the current location
-    int x = currentX;
-    int y = currentY;
+    coord c = {.x = currentX, .y = currentY};
     int wallFront = API_wallFront();
     int wallLeft = API_wallLeft();
     int wallRight = API_wallRight();
 
-    /*
+    // based on the current heading, places walls at the respective locations.
+    // walls are placed both in the global wall arrays and in the simulator
     switch (currentHeading)
     {
         case NORTH:
-        {
             if (wallFront)
-            {
-                northArray[x][y] = 1;
-                if (y != 15)
-                    southArray[x][y+1] = 1;
-            }
+                placeWall(currentHeading,c);
             if (wallLeft)
-            {
-                westArray[x][y] = 1;
-                if (x != 0)
-                    eastArray[x-1][y] = 1;
-            }
+                placeWall(WEST,c);
             if (wallRight)
-            {
-                eastArray[x][y] = 1;
-                if (x != 15)
-                    westArray[x+1][y] = 1;
-            }
-            return;
-        }
+                placeWall(EAST,c);
+            break;
         case WEST:
-        {
             if (wallFront)
-            {
-                westArray[x][y] = 1;
-                if (x != 0)
-                    eastArray[x-1][y] = 1;
-            }
+                placeWall(currentHeading,c);
             if (wallLeft)
-            {
-                southArray[x][y] = 1;
-                if (y != 0)
-                    northArray[x][y-1] = 1;
-            }
+                placeWall(SOUTH,c);
             if (wallRight)
-            {
-                northArray[x][y] = 1;
-                if (y != 15)
-                    southArray[x][y+1] = 1;
-            }
-            return;
-        }
+                placeWall(NORTH,c);
+            break;
         case SOUTH:
-        {
             if (wallFront)
-            {
-                southArray[x][y] = 1;
-                if (y != 0)
-                    northArray[x][y-1] = 1;
-            }
+                placeWall(currentHeading,c);
             if (wallLeft)
-            {
-                eastArray[x][y] = 1;
-                if (x != 15)
-                    westArray[x+1][y] = 1;
-            }
+                placeWall(EAST,c);
             if (wallRight)
-            {
-                westArray[x][y] = 1;
-                if (x != 0)
-                    eastArray[x-1][y] = 1;
-            }
-            return;
-        }
+                placeWall(WEST,c);
+            break;
         case EAST:
-        {
             if (wallFront)
-            {
-                eastArray[x][y] = 1;
-                if (x != 15)
-                    westArray[x+1][y] = 1;
-            }
+                placeWall(currentHeading,c);
             if (wallLeft)
-            {
-                northArray[x][y] = 1;
-                if (y != 15)
-                    southArray[x][y+1] = 1;
-            }
+                placeWall(NORTH,c);
             if (wallRight)
-            {
-                southArray[x][y] = 1;
-                if (y != 0)
-                    northArray[x][y-1] = 1;
-            }
-            return;
-        }
+                placeWall(SOUTH,c);
+            break;
     }
-    */
-    return;
 }
 
 // given a heading, moves into the neighboring square and updates coordinate values
@@ -621,34 +572,127 @@ void moveIntoNeighbor(Heading heading)
     currentHeading = heading;
 }
 
-Action solver() {
-    Heading go = floodFill(); // returns the direction with the least floodfill that is possible to go to
+// returns the heading to the next cell to visit based on floodfill values
+Heading nextHeading()
+{
+    // set minimum neighbor's floodfill value to very large number, expecting it to get overwritten later
+    int minNeighbor = 1000;
+    Heading minDirection;
+    coord c = {.x = currentX, .y = currentY};
 
-    /*
-    API_setWall(8,8,'n');
-    API_setWall(8,8,'e');
-    horizontalWalls[8][9] = 1;
-    verticalWalls[9][8] = 1;
-    struct coord c;
-    c.x = 8;
-    c.y = 8;
-    if (checkWall(EAST,c))
-        debug_log("hi");
-        */
-    
-    // moveIntoNeighbor(go);
-    // updateWalls(); // detects walls and updates newly found walls in maze array
+    // finds and returns the direction of the accessible neighbor with the lowest floodfill value
+    if ((!checkWall(NORTH,c)) && (floodArray[c.x][c.y + 1] < minNeighbor))
+    {
+        minNeighbor = floodArray[c.x][c.y + 1];
+        minDirection = NORTH;
+    }
+    if ((!checkWall(WEST,c)) && (floodArray[c.x - 1][c.y] < minNeighbor))
+    {
+        minNeighbor = floodArray[c.x - 1][c.y];
+        minDirection = WEST;
+    }
+    if ((!checkWall(SOUTH,c)) && (floodArray[c.x][c.y - 1] < minNeighbor))
+    {
+        minNeighbor = floodArray[c.x][c.y - 1];
+        minDirection = SOUTH;
+    }
+    if ((!checkWall(EAST,c)) && (floodArray[c.x + 1][c.y] < minNeighbor))
+    {
+        minNeighbor = floodArray[c.x + 1][c.y];
+        minDirection = EAST;
+    }    
+    return minDirection;
 }
 
-// maze array
-// floodfill array
+// increments currentX or currentY global variable based on the mouse's current heading
+void incrementXY()
+{
+    switch (currentHeading)
+    {
+        case NORTH:
+            currentY++;
+            break;
+        case WEST:
+            currentX--;
+            break;
+        case SOUTH:
+            currentY--;
+            break;
+        case EAST:
+            currentX++;
+            break;
+    }
+}
 
-/* Loop
-* 
-    Finds the values of it�s neighboring cells (from the flood array)
-    Travels to the neighboring cell with the least value.
-    Detects the walls to its left, right and the front
-    Updates the newly found walls in the maze array
-    Perform the flood fill for the entire flood array
-    Back to step 1, and continue until the robot moves to the desired position.
-*/
+// turns currentHeading global variable to the left based on the mouse's current heading,
+// then returns LEFT action
+Action incrementLeft()
+{
+    switch (currentHeading)
+    {
+        case NORTH:
+            currentHeading = WEST;
+            break;
+        case WEST:
+            currentHeading = SOUTH;
+            break;
+        case SOUTH:
+            currentHeading = EAST;
+            break;
+        case EAST:
+            currentHeading = NORTH;
+            break;
+    }
+    return LEFT;
+}
+
+// turns currentHeading global variable to the right based on the mouse's current heading,
+// then returns RIGHT action
+Action incrementRight()
+{
+    switch (currentHeading)
+    {
+        case NORTH:
+            currentHeading = EAST;
+            break;
+        case WEST:
+            currentHeading = NORTH;
+            break;
+        case SOUTH:
+            currentHeading = WEST;
+            break;
+        case EAST:
+            currentHeading = SOUTH;
+            break;
+    }
+    return RIGHT;
+}
+
+// based on updated wall and floodfill information, return the next action that the mouse should do
+Action nextAction()
+{
+    Heading turnTo = nextHeading();
+
+    // moves forward if the mouse is already facing the correct heading
+    if (turnTo == currentHeading)
+    {
+        incrementXY();
+        return FORWARD;
+    }
+
+    // determines which way to turn based on current direction and desigred direction
+    if ((currentHeading == NORTH && turnTo == EAST) || 
+        (currentHeading == WEST && turnTo == NORTH) ||
+        (currentHeading == SOUTH && turnTo == WEST) ||
+        (currentHeading == EAST && turnTo == SOUTH))
+        return incrementRight();
+    else
+        return incrementLeft();
+}
+
+// sends the mouse's recommended next action back to main
+Action solver() {
+    updateWalls();
+    floodFill();
+    return nextAction();
+}
