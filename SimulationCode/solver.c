@@ -135,6 +135,7 @@ void queue_clear(queue q) {
 
 // global variable declarations and assignments
 
+int target = 1; // 0 if going to start, 1 if going to center
 int currentX = 0;
 int currentY = 0;
 Heading currentHeading = NORTH;
@@ -144,7 +145,8 @@ Heading currentHeading = NORTH;
 // in addition, the x values are displayed upside down compared to how they are displayed in
 // a graphing convention; here, x = 15 is at the bottom while x = 0 is at the top
 
-static int verticalWalls[17][16] =
+// keeps track of vertical walls in the maze
+int verticalWalls[17][16] =
 { // x = 0 and x = 16 are all walls
     { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -165,7 +167,8 @@ static int verticalWalls[17][16] =
     { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 };
 
-static int horizontalWalls[16][17] =
+// keeps track of horizontal walls in the maze
+int horizontalWalls[16][17] =
 { // y = 0 and y = 16 are all horizontal walls
     { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -206,7 +209,29 @@ int floodArray[16][16];
     {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}
 }; */
 
-void resetFloodArray()
+// keeps track of all of the cells the mouse has visited
+int travelArray[16][16] =
+{
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+};
+
+// resets the floodfill array to target the center as destination
+void resetToCenter()
 {
     // set the entire flood array to blank values (-1)
     for (int x = 0; x < 16; x++)
@@ -221,7 +246,34 @@ void resetFloodArray()
     floodArray[7][8] = 0;
     floodArray[8][7] = 0;
     floodArray[8][8] = 0;
+}
 
+// resets the floodfill array to target the start as destination
+void resetToStart()
+{
+    // set the entire flood array to blank values (-1)
+    for (int x = 0; x < 16; x++)
+    {
+        for (int y = 0; y < 16; y++)
+        {
+            floodArray[x][y] = -1;
+        }
+    }
+    // set desired goal values (0). to go back to the start, this is the bottom left corner
+    floodArray[0][0] = 0;
+}
+
+// given a coord, checks to see if the mouse has visited a certain cell before
+int checkTravelArray(coord c)
+{
+    return travelArray[c.x][c.y];
+}
+
+// given a coord, updates the travel array to mark that the mouse has visited that cell before
+void updateTravelArray(coord c)
+{
+    travelArray[c.x][c.y] = 1;
+    // API_setText(c.x,c.y,"1");
 }
 
 // given heading and coordinates, check if there is a wall in front of the mouse
@@ -294,18 +346,24 @@ int checkAvailable(Heading heading, coord c)
     return 0;
 }
 
-// given coordinates, updates the respective cell's floodfill value
-void updateFloodFillCell(coord c, int val)
+// given coordinate, updates the respective cell's floodfill value
+void updateFloodArray(coord c, int val)
 {
     int x = c.x;
     int y = c.y;
     floodArray[x][y] = val;
 }
 
+// given coordinate, gets the respective cell's floodfill value
+int checkFloodArray(coord c)
+{
+    return floodArray[c.x][c.y];
+}
+
 // updates the floodfill array based on known walls
 void floodFill() {
     // set non-goal values to blank so that the floodfill array can be recalculated
-    resetFloodArray();
+    resetToCenter();
 
     // declare/initialize relevant variables for queue for floodfill algorithm
     queue q = queue_create();
@@ -346,28 +404,28 @@ void floodFill() {
             neighbor.x = current.x;
             neighbor.y = current.y + 1;
             queue_push(q,neighbor);
-            updateFloodFillCell(neighbor,currentVal+1);
+            updateFloodArray(neighbor,currentVal+1);
         }
         if (checkAvailable(WEST,current))
         {
             neighbor.x = current.x-1;
             neighbor.y = current.y;
             queue_push(q,neighbor);
-            updateFloodFillCell(neighbor,currentVal+1);
+            updateFloodArray(neighbor,currentVal+1);
         }
         if (checkAvailable(SOUTH,current))
         {
             neighbor.x = current.x;
             neighbor.y = current.y - 1;
             queue_push(q,neighbor);
-            updateFloodFillCell(neighbor,currentVal+1);
+            updateFloodArray(neighbor,currentVal+1);
         }
         if (checkAvailable(EAST,current))
         {
             neighbor.x = current.x + 1;
             neighbor.y = current.y;
             queue_push(q,neighbor);
-            updateFloodFillCell(neighbor,currentVal+1);
+            updateFloodArray(neighbor,currentVal+1);
         }
     }
 }
@@ -451,127 +509,6 @@ void updateWalls()
     }
 }
 
-// given a heading, moves into the neighboring square and updates coordinate values
-void moveIntoNeighbor(Heading heading)
-{
-    switch (currentHeading)
-    {
-        case NORTH:
-        {
-            if (heading == NORTH)
-            {
-                API_moveForward();
-                currentY++;
-            }
-            else if (heading == WEST)
-            {
-                API_turnLeft();
-                API_moveForward;
-                currentX--;
-            }
-            else if (heading == SOUTH)
-            {
-                API_turnLeft();
-                API_turnLeft();
-                API_moveForward;
-                currentY--;
-            }
-            else if (heading == EAST)
-            {
-                API_turnRight();
-                API_moveForward;
-                currentX++;
-            }
-            break;
-        }
-        case WEST:
-        {
-            if (heading == NORTH)
-            {
-                API_turnRight();
-                API_moveForward();
-                currentY++;
-            }
-            else if (heading == WEST)
-            {
-                API_moveForward;
-                currentX--;
-            }
-            else if (heading == SOUTH)
-            {
-                API_turnLeft();
-                API_moveForward;
-                currentY--;
-            }
-            else if (heading == EAST)
-            {
-                API_turnLeft();
-                API_turnLeft();
-                API_moveForward;
-                currentX++;
-            }
-            break;
-        }
-        case SOUTH:
-        {
-            if (heading == NORTH)
-            {
-                API_turnLeft();
-                API_turnLeft();
-                API_moveForward();
-                currentY++;
-            }
-            else if (heading == WEST)
-            {
-                API_turnRight();
-                API_moveForward;
-                currentX--;
-            }
-            else if (heading == SOUTH)
-            {
-                API_moveForward;
-                currentY--;
-            }
-            else if (heading == EAST)
-            {
-                API_turnLeft();
-                API_moveForward;
-                currentX++;
-            }
-            break;
-        }
-        case EAST:
-        {
-            if (heading == NORTH)
-            {
-                API_turnLeft();
-                API_moveForward();
-                currentY++;
-            }
-            else if (heading == WEST)
-            {
-                API_turnLeft();
-                API_turnLeft();
-                API_moveForward;
-                currentX--;
-            }
-            else if (heading == SOUTH)
-            {
-                API_turnRight();
-                API_moveForward;
-                currentY--;
-            }
-            else if (heading == EAST)
-            {
-                API_moveForward;
-                currentX++;
-            }
-            break;
-        }
-    }
-    currentHeading = heading;
-}
-
 // returns the heading to the next cell to visit based on floodfill values
 Heading nextHeading()
 {
@@ -624,6 +561,31 @@ void incrementXY()
     }
 }
 
+// Increments coord in the direction of the heading by input integer,
+// then returns updated coord
+coord incrementCoord(Heading h, coord currentCoord, int num)
+{
+    coord c;
+    c.x = currentCoord.x;
+    c.y = currentCoord.y;
+    switch (h)
+    {
+        case NORTH:
+            c.y += num;
+            break;
+        case WEST:
+            c.x -= num;
+            break;
+        case SOUTH:
+            c.y -= num;
+            break;
+        case EAST:
+            c.x += num;
+            break;
+    }
+    return c;
+}
+
 // turns currentHeading global variable to the left based on the mouse's current heading,
 // then returns LEFT action
 Action incrementLeft()
@@ -672,11 +634,35 @@ Action incrementRight()
 Action nextAction()
 {
     Heading turnTo = nextHeading();
+    coord currentCoord = {.x = currentX, .y = currentY};
+    updateTravelArray(currentCoord);
+    coord originalCoord = currentCoord;
 
     // moves forward if the mouse is already facing the correct heading
     if (turnTo == currentHeading)
     {
-        incrementXY();
+        int moveNumber = 0;
+        while (checkTravelArray(currentCoord) == 1 && (!checkWall(turnTo,currentCoord))
+        && (checkFloodArray(incrementCoord(turnTo,currentCoord,1)) < checkFloodArray(currentCoord)))
+        {
+            moveNumber++;
+            currentCoord = incrementCoord(turnTo,currentCoord,1);
+        } 
+        for (int i = 0; i < moveNumber; i++)
+        {
+            updateTravelArray(incrementCoord(turnTo,originalCoord,i));
+        }
+        currentX = currentCoord.x;
+        currentY = currentCoord.y;
+
+        char forSetText[4] = "";
+        sprintf(forSetText, "%d", moveNumber);
+        debug_log(forSetText);
+
+        for (int i = 0; i < moveNumber; i++)
+        {
+            API_moveForward();
+        }
         return FORWARD;
     }
 
@@ -685,14 +671,40 @@ Action nextAction()
         (currentHeading == WEST && turnTo == NORTH) ||
         (currentHeading == SOUTH && turnTo == WEST) ||
         (currentHeading == EAST && turnTo == SOUTH))
+    {
+        API_turnRight();
         return incrementRight();
+    }
     else
+    {
+        API_turnLeft();
         return incrementLeft();
+    }
+}
+
+void checkDestination()
+{
+    if (target) // if going to center
+    {
+        if (currentX >= 7 && currentX <=8 && currentY >= 7 && currentY <= 8)
+            {
+                API_ackReset();
+                currentX = 0;
+                currentY = 0;
+                currentHeading = NORTH;
+            }
+    }
+    else
+    {
+        if (currentX == 0 && currentY == 0)
+            target = 1;
+    }
 }
 
 // sends the mouse's recommended next action back to main
 Action solver() {
-    updateWalls();
+    checkDestination();
+    updateWalls();    
     floodFill();
     return nextAction();
 }
