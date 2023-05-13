@@ -10,7 +10,12 @@ typedef struct coord {
     int y;
 } coord;
 
-typedef coord item_type;
+typedef struct neighbor {
+    coord coord;
+    Heading heading;
+} neighbor;
+
+typedef neighbor item_type;
 typedef struct _queue* queue;
 queue queue_create();
 void queue_destroy(queue q);
@@ -139,6 +144,9 @@ int target = 1; // 0 if going to start, 1 if going to center
 int currentX = 0;
 int currentY = 0;
 Heading currentHeading = NORTH;
+
+const int TURN_SCORE = 5;
+const int TILE_SCORE = 10;
 
 // watch out when looking at the following arrays, remember that in 2D text form:
 // x values are displayed vertically and y values are displayed horizontally.
@@ -298,7 +306,7 @@ int checkWall(Heading heading, coord c)
     return -1;
 }
 
-// given heaidng and coordinates, returns the floodfill value of the corresponding neighbor cell.
+// given heading and coordinates, returns the floodfill value of the corresponding neighbor cell.
 // if the neighbor is off of the maze (argument cell is on the boundary of the maze), return -2
 int getNeighbor(Heading heading, coord c)
 {
@@ -329,6 +337,7 @@ int getNeighbor(Heading heading, coord c)
     }
 }
 
+// THIS FUNCTION IS NO LONGER USED BY THE CURRENT IMPLEMENTATION
 // given heading and coordinates, check if the neighbor cell can be processed.
 // to be processed, the neighbor cell's floodfill value should be -1 and there should not 
 // be a wall in between the current cell and the neighborcell
@@ -346,7 +355,7 @@ int checkAvailable(Heading heading, coord c)
     return 0;
 }
 
-// given coordinate, updates the respective cell's floodfill value
+// given neighbor coordinate, updates the respective cell's floodfill value
 void updateFloodArray(coord c, int val)
 {
     int x = c.x;
@@ -355,10 +364,79 @@ void updateFloodArray(coord c, int val)
 }
 
 // given coordinate, gets the respective cell's floodfill value
-int checkFloodArray(coord c)
+int getFloodArray(coord c)
 {
     return floodArray[c.x][c.y];
 }
+
+/*
+// given a neighbor and heading, calculates that neighbor's neighbor's floodfill value and updates the floodfill array.
+// this function assumes the neighbor's neighbor is accessible in the given heading direction.
+// returns a neighbor to be added to the floodfill queue
+neighbor calculateNeighbor(neighbor current, Heading heading)
+{
+    neighbor next = {.coord = current.coord, .heading = heading};
+    int currentVal = getFloodArray(current.coord);
+
+    if (heading == NORTH)
+        next.coord.y++;
+    else if (heading == WEST)
+        next.coord.x--;
+    else if (heading == SOUTH)
+        next.coord.y--;
+    else if (heading == EAST)
+        next.coord.x++;
+
+    // compute the floodfill value for the next neighbor
+    int nextVal = currentVal + TILE_SCORE;
+    // if the mouse must turn to get to the next cell, increase the floodfill value by the turning constant
+    if (current.heading != heading)
+        nextVal += TURN_SCORE;
+    
+    // check that the neighbor is either missing or has a higher floodfill value
+
+    
+            
+        
+        
+        if (!checkWall(WEST,currentCoord))
+        {
+            nextVal = currentVal + TILE_SCORE;
+            if (current.heading != WEST)
+                nextVal += TURN_SCORE;
+            next.x = current.x-1;
+            next.y = current.y;
+            queue_push(q,next);
+            if (getFloodArray(next) >= currentVal || getFloodArray(next) < 0)
+                queue_push(q,next);
+            updateFloodArray(next,currentVal+1);
+        }
+        if (!checkWall(SOUTH,currentCoord))
+        {
+            nextVal = currentVal + TILE_SCORE;
+            if (current.heading != SOUTH)
+                nextVal += TURN_SCORE;
+            next.x = current.x;
+            next.y = current.y - 1;
+            queue_push(q,next);
+            if (getFloodArray(next) >= currentVal || getFloodArray(next) < 0)
+                queue_push(q,next);
+            updateFloodArray(next,currentVal+1);
+        }
+        if (checkWall(EAST,currentCoord))
+        {
+            nextVal = currentVal + TILE_SCORE;
+            if (current.heading != EAST)
+                nextVal += TURN_SCORE;
+            next.x = current.x + 1;
+            next.y = current.y;
+            queue_push(q,next);
+            if (getFloodArray(next) >= currentVal || getFloodArray(next) < 0)
+                queue_push(q,next);
+            updateFloodArray(next,currentVal+1);
+        }
+}
+*/
 
 // updates the floodfill array based on known walls
 void floodFill() {
@@ -367,8 +445,7 @@ void floodFill() {
 
     // declare/initialize relevant variables for queue for floodfill algorithm
     queue q = queue_create();
-    coord current;
-    int currentVal;
+    neighbor current;
 
     // iterate through the 2D array, find goal values and add them to the queue
     for (int x = 0; x < 16; x++)
@@ -377,12 +454,27 @@ void floodFill() {
         {
             if (floodArray[x][y] == 0)
             {
-                current.x = x;
-                current.y = y;
+                current.coord.x = x;
+                current.coord.y = y;
+
+                // for the starting goal values, it doesn't matter which direction you approach them from.
+                // as such, they should be oriented from all directions
+                current.heading = NORTH;
+                queue_push(q,current);
+                current.heading = WEST;
+                queue_push(q,current);
+                current.heading = EAST;
+                queue_push(q,current);
+                current.heading = SOUTH;
                 queue_push(q,current);
             }
         }
     }
+
+    // more declarations/initializations
+    neighbor next;
+    int currentVal;
+    int nextVal;
 
     // adds available neighbors to queue and updates their floodfill values
     while (!queue_is_empty(q))
@@ -390,43 +482,79 @@ void floodFill() {
         current = queue_pop(q);
         
         // prints the floodfill number to the simulation screen
-        char forSetText[4] = "";
-        sprintf(forSetText, "%d", floodArray[current.x][current.y]);
-        API_setText(current.x,current.y,forSetText);
+        char forSetText[6] = "";
+        sprintf(forSetText, "%d", floodArray[current.coord.x][current.coord.y]);
+        API_setText(current.coord.x,current.coord.y,forSetText);
 
-        coord neighbor;
-        currentVal = floodArray[current.x][current.y];
+        sprintf(forSetText, "%d", queue_size(q));
+        debug_log(forSetText);
 
-        // set value of all available (blank and accessible) neighbors to current's value + 1
+        // initializes values for calculating floodfills for neighbors
+        currentVal = getFloodArray(current.coord);
+        
+
+        // set value of all accessible neighbors to current's value + 1
         // and add available neighbors to queue
-        if (checkAvailable(NORTH,current))
+        
+        if (!checkWall(NORTH,current.coord))
         {
-            neighbor.x = current.x;
-            neighbor.y = current.y + 1;
-            queue_push(q,neighbor);
-            updateFloodArray(neighbor,currentVal+1);
+            nextVal = currentVal + TILE_SCORE;
+            if (current.heading != NORTH)
+                nextVal += TURN_SCORE;
+            next.coord.x = current.coord.x;
+            next.coord.y = current.coord.y + 1;
+            
+            if (getFloodArray(next.coord) < 0)
+            {
+                queue_push(q,next);
+                updateFloodArray(next.coord,nextVal);
+            }
         }
-        if (checkAvailable(WEST,current))
+        
+        if (!checkWall(WEST,current.coord))
         {
-            neighbor.x = current.x-1;
-            neighbor.y = current.y;
-            queue_push(q,neighbor);
-            updateFloodArray(neighbor,currentVal+1);
+            nextVal = currentVal + TILE_SCORE;
+            if (current.heading != WEST)
+                nextVal += TURN_SCORE;
+            next.coord.x = current.coord.x-1;
+            next.coord.y = current.coord.y;
+            queue_push(q,next);
+            if (getFloodArray(next.coord) < 0)
+            {
+                queue_push(q,next);
+                updateFloodArray(next.coord,nextVal);
+            }
         }
-        if (checkAvailable(SOUTH,current))
+        
+        if (!checkWall(SOUTH,current.coord))
         {
-            neighbor.x = current.x;
-            neighbor.y = current.y - 1;
-            queue_push(q,neighbor);
-            updateFloodArray(neighbor,currentVal+1);
+            nextVal = currentVal + TILE_SCORE;
+            if (current.heading != SOUTH)
+                nextVal += TURN_SCORE;
+            next.coord.x = current.coord.x;
+            next.coord.y = current.coord.y - 1;
+            queue_push(q,next);
+            if (getFloodArray(next.coord) < 0)
+            {
+                queue_push(q,next);
+                updateFloodArray(next.coord,nextVal);
+            }
         }
-        if (checkAvailable(EAST,current))
+        if (!checkWall(EAST,current.coord))
         {
-            neighbor.x = current.x + 1;
-            neighbor.y = current.y;
-            queue_push(q,neighbor);
-            updateFloodArray(neighbor,currentVal+1);
+            nextVal = currentVal + TILE_SCORE;
+            if (current.heading != EAST)
+                nextVal += TURN_SCORE;
+            next.coord.x = current.coord.x + 1;
+            next.coord.y = current.coord.y;
+            queue_push(q,next);
+            if (getFloodArray(next.coord) < 0)
+            {
+                queue_push(q,next);
+                updateFloodArray(next.coord,nextVal);
+            }
         }
+        
     }
 }
 
@@ -643,7 +771,7 @@ Action nextAction()
     {
         int moveNumber = 0;
         while (checkTravelArray(currentCoord) == 1 && (!checkWall(turnTo,currentCoord))
-        && (checkFloodArray(incrementCoord(turnTo,currentCoord,1)) < checkFloodArray(currentCoord)))
+        && (getFloodArray(incrementCoord(turnTo,currentCoord,1)) < getFloodArray(currentCoord)))
         {
             moveNumber++;
             currentCoord = incrementCoord(turnTo,currentCoord,1);
