@@ -146,7 +146,7 @@ int currentY = 0;
 Heading currentHeading = NORTH;
 
 const int TURN_SCORE = 5;
-const int TILE_SCORE = 10;
+const int TILE_SCORE = 2;
 
 // watch out when looking at the following arrays, remember that in 2D text form:
 // x values are displayed vertically and y values are displayed horizontally.
@@ -475,6 +475,7 @@ void floodFill() {
     neighbor next;
     int currentVal;
     int nextVal;
+    int neighborVal;
 
     // adds available neighbors to queue and updates their floodfill values
     while (!queue_is_empty(q))
@@ -485,9 +486,6 @@ void floodFill() {
         char forSetText[6] = "";
         sprintf(forSetText, "%d", floodArray[current.coord.x][current.coord.y]);
         API_setText(current.coord.x,current.coord.y,forSetText);
-
-        sprintf(forSetText, "%d", queue_size(q));
-        debug_log(forSetText);
 
         // initializes values for calculating floodfills for neighbors
         currentVal = getFloodArray(current.coord);
@@ -503,8 +501,10 @@ void floodFill() {
                 nextVal += TURN_SCORE;
             next.coord.x = current.coord.x;
             next.coord.y = current.coord.y + 1;
+            next.heading = NORTH;
             
-            if (getFloodArray(next.coord) < 0)
+            neighborVal = getNeighbor(NORTH,current.coord);
+            if (neighborVal == -1 || neighborVal > nextVal)
             {
                 queue_push(q,next);
                 updateFloodArray(next.coord,nextVal);
@@ -518,8 +518,9 @@ void floodFill() {
                 nextVal += TURN_SCORE;
             next.coord.x = current.coord.x-1;
             next.coord.y = current.coord.y;
-            queue_push(q,next);
-            if (getFloodArray(next.coord) < 0)
+            next.heading = WEST;
+            neighborVal = getNeighbor(WEST,current.coord);
+            if (neighborVal == -1 || neighborVal > nextVal)
             {
                 queue_push(q,next);
                 updateFloodArray(next.coord,nextVal);
@@ -533,8 +534,9 @@ void floodFill() {
                 nextVal += TURN_SCORE;
             next.coord.x = current.coord.x;
             next.coord.y = current.coord.y - 1;
-            queue_push(q,next);
-            if (getFloodArray(next.coord) < 0)
+            next.heading = SOUTH;
+            neighborVal = getNeighbor(SOUTH,current.coord);
+            if (neighborVal == -1 || neighborVal > nextVal)
             {
                 queue_push(q,next);
                 updateFloodArray(next.coord,nextVal);
@@ -547,8 +549,9 @@ void floodFill() {
                 nextVal += TURN_SCORE;
             next.coord.x = current.coord.x + 1;
             next.coord.y = current.coord.y;
-            queue_push(q,next);
-            if (getFloodArray(next.coord) < 0)
+            next.heading = EAST;
+            neighborVal = getNeighbor(EAST,current.coord);
+            if (neighborVal == -1 || neighborVal > nextVal)
             {
                 queue_push(q,next);
                 updateFloodArray(next.coord,nextVal);
