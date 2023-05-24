@@ -13,6 +13,7 @@ typedef struct coord {
 typedef struct neighbor {
     coord coord;
     Heading heading;
+    int streak;
 } neighbor;
 
 typedef neighbor item_type;
@@ -145,8 +146,8 @@ int currentX = 0;
 int currentY = 0;
 Heading currentHeading = NORTH;
 
-const int TURN_SCORE = 5;
-const int TILE_SCORE = 2;
+const int TURN_SCORE = 15;
+const int TILE_SCORE = 10;
 
 // watch out when looking at the following arrays, remember that in 2D text form:
 // x values are displayed vertically and y values are displayed horizontally.
@@ -216,6 +217,27 @@ int floodArray[16][16];
     {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
     {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}
 }; */
+
+// keeps track of the path the car should take after floodfill
+Heading pathArray[16][16] =
+{
+    {NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH},
+    {NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH},
+    {NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH},
+    {NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH},
+    {NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH},
+    {NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH},
+    {NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH},
+    {NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH},
+    {NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH},
+    {NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH},
+    {NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH},
+    {NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH},
+    {NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH},
+    {NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH},
+    {NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH},
+    {NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH,NORTH}
+};
 
 // keeps track of all of the cells the mouse has visited
 int travelArray[16][16] =
@@ -355,7 +377,7 @@ int checkAvailable(Heading heading, coord c)
     return 0;
 }
 
-// given neighbor coordinate, updates the respective cell's floodfill value
+// given coordinate, updates the respective cell's floodfill value
 void updateFloodArray(coord c, int val)
 {
     int x = c.x;
@@ -369,74 +391,11 @@ int getFloodArray(coord c)
     return floodArray[c.x][c.y];
 }
 
-/*
-// given a neighbor and heading, calculates that neighbor's neighbor's floodfill value and updates the floodfill array.
-// this function assumes the neighbor's neighbor is accessible in the given heading direction.
-// returns a neighbor to be added to the floodfill queue
-neighbor calculateNeighbor(neighbor current, Heading heading)
+// given coordinate, updates the respective cell's path value
+void updatePathArray(coord c, Heading h)
 {
-    neighbor next = {.coord = current.coord, .heading = heading};
-    int currentVal = getFloodArray(current.coord);
-
-    if (heading == NORTH)
-        next.coord.y++;
-    else if (heading == WEST)
-        next.coord.x--;
-    else if (heading == SOUTH)
-        next.coord.y--;
-    else if (heading == EAST)
-        next.coord.x++;
-
-    // compute the floodfill value for the next neighbor
-    int nextVal = currentVal + TILE_SCORE;
-    // if the mouse must turn to get to the next cell, increase the floodfill value by the turning constant
-    if (current.heading != heading)
-        nextVal += TURN_SCORE;
-    
-    // check that the neighbor is either missing or has a higher floodfill value
-
-    
-            
-        
-        
-        if (!checkWall(WEST,currentCoord))
-        {
-            nextVal = currentVal + TILE_SCORE;
-            if (current.heading != WEST)
-                nextVal += TURN_SCORE;
-            next.x = current.x-1;
-            next.y = current.y;
-            queue_push(q,next);
-            if (getFloodArray(next) >= currentVal || getFloodArray(next) < 0)
-                queue_push(q,next);
-            updateFloodArray(next,currentVal+1);
-        }
-        if (!checkWall(SOUTH,currentCoord))
-        {
-            nextVal = currentVal + TILE_SCORE;
-            if (current.heading != SOUTH)
-                nextVal += TURN_SCORE;
-            next.x = current.x;
-            next.y = current.y - 1;
-            queue_push(q,next);
-            if (getFloodArray(next) >= currentVal || getFloodArray(next) < 0)
-                queue_push(q,next);
-            updateFloodArray(next,currentVal+1);
-        }
-        if (checkWall(EAST,currentCoord))
-        {
-            nextVal = currentVal + TILE_SCORE;
-            if (current.heading != EAST)
-                nextVal += TURN_SCORE;
-            next.x = current.x + 1;
-            next.y = current.y;
-            queue_push(q,next);
-            if (getFloodArray(next) >= currentVal || getFloodArray(next) < 0)
-                queue_push(q,next);
-            updateFloodArray(next,currentVal+1);
-        }
+    pathArray[c.x][c.y] = h;
 }
-*/
 
 // updates the floodfill array based on known walls
 void floodFill() {
@@ -456,6 +415,7 @@ void floodFill() {
             {
                 current.coord.x = x;
                 current.coord.y = y;
+                current.streak = 0;
 
                 // for the starting goal values, it doesn't matter which direction you approach them from.
                 // as such, they should be oriented from all directions
@@ -485,37 +445,57 @@ void floodFill() {
         // prints the floodfill number to the simulation screen
         char forSetText[6] = "";
         sprintf(forSetText, "%d", floodArray[current.coord.x][current.coord.y]);
-        API_setText(current.coord.x,current.coord.y,forSetText);
+        API_setText(current.coord.x,current.coord.y,forSetText);        
 
         // initializes values for calculating floodfills for neighbors
-        currentVal = getFloodArray(current.coord);
+        currentVal = getFloodArray(current.coord);     
         
-
-        // set value of all accessible neighbors to current's value + 1
-        // and add available neighbors to queue
-        
+        // checks for north neighbor
         if (!checkWall(NORTH,current.coord))
         {
             nextVal = currentVal + TILE_SCORE;
+            // checks if the mouse must turn to go NORTH or not
             if (current.heading != NORTH)
+            {
                 nextVal += TURN_SCORE;
+                next.streak = 0;
+            }
+            // if the mouse doesn't need to turn, records that is is on a straight streak
+            else
+            {
+                nextVal -= current.streak;
+                next.streak = current.streak + 1;
+            }
+
+            // prepare neighbor to add to the floodfill queue
             next.coord.x = current.coord.x;
             next.coord.y = current.coord.y + 1;
             next.heading = NORTH;
             
+            // add to the floodfill queue and update floodfill value
             neighborVal = getNeighbor(NORTH,current.coord);
             if (neighborVal == -1 || neighborVal > nextVal)
             {
                 queue_push(q,next);
                 updateFloodArray(next.coord,nextVal);
+                updatePathArray(next.coord,SOUTH);
             }
         }
         
+        // does the same for the neighbor to the WEST
         if (!checkWall(WEST,current.coord))
         {
             nextVal = currentVal + TILE_SCORE;
             if (current.heading != WEST)
+            {
                 nextVal += TURN_SCORE;
+                next.streak = 0;
+            }
+            else
+            {
+                nextVal -= current.streak;
+                next.streak = current.streak + 1;
+            }
             next.coord.x = current.coord.x-1;
             next.coord.y = current.coord.y;
             next.heading = WEST;
@@ -524,14 +504,24 @@ void floodFill() {
             {
                 queue_push(q,next);
                 updateFloodArray(next.coord,nextVal);
+                updatePathArray(next.coord,EAST);
             }
         }
         
+        // does the same to the neighbor to the SOUTH
         if (!checkWall(SOUTH,current.coord))
         {
             nextVal = currentVal + TILE_SCORE;
             if (current.heading != SOUTH)
+            {
                 nextVal += TURN_SCORE;
+                next.streak = 0;
+            }
+            else
+            {
+                nextVal -= current.streak;
+                next.streak = current.streak + 1;
+            }
             next.coord.x = current.coord.x;
             next.coord.y = current.coord.y - 1;
             next.heading = SOUTH;
@@ -540,13 +530,24 @@ void floodFill() {
             {
                 queue_push(q,next);
                 updateFloodArray(next.coord,nextVal);
+                updatePathArray(next.coord,NORTH);
             }
         }
+
+        // does the same to the neighbor to the EAST
         if (!checkWall(EAST,current.coord))
         {
             nextVal = currentVal + TILE_SCORE;
             if (current.heading != EAST)
+            {
                 nextVal += TURN_SCORE;
+                next.streak = 0;
+            }
+            else
+            {
+                nextVal -= current.streak;
+                next.streak = current.streak + 1;
+            }
             next.coord.x = current.coord.x + 1;
             next.coord.y = current.coord.y;
             next.heading = EAST;
@@ -555,6 +556,7 @@ void floodFill() {
             {
                 queue_push(q,next);
                 updateFloodArray(next.coord,nextVal);
+                updatePathArray(next.coord,WEST);
             }
         }
         
