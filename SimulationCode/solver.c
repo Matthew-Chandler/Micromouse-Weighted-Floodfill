@@ -758,12 +758,9 @@ Action nextAction()
         && getPathArray(currentCoord) == currentHeading)
         {
             moveNumber++;
+            updateTravelArray(currentCoord);
             currentCoord = incrementCoord(turnTo,currentCoord,1);
         } 
-        for (int i = 0; i < moveNumber; i++)
-        {
-            updateTravelArray(incrementCoord(turnTo,originalCoord,i));
-        }
         currentX = currentCoord.x;
         currentY = currentCoord.y;
 
