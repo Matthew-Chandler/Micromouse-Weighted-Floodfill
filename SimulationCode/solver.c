@@ -146,8 +146,9 @@ int currentX = 0;
 int currentY = 0;
 Heading currentHeading = NORTH;
 
-const int TURN_SCORE = 15;
-const int TILE_SCORE = 10;
+const int TURN_SCORE = 0;
+const int TILE_SCORE = 1;
+const int STREAK_SCORE = 0;
 
 // watch out when looking at the following arrays, remember that in 2D text form:
 // x values are displayed vertically and y values are displayed horizontally.
@@ -469,7 +470,7 @@ void floodFill() {
             // if the mouse doesn't need to turn, records that is is on a straight streak
             else
             {
-                nextVal -= current.streak;
+                nextVal += current.streak * STREAK_SCORE;
                 next.streak = current.streak + 1;
             }
 
@@ -480,7 +481,7 @@ void floodFill() {
             
             // add to the floodfill queue and update floodfill value
             neighborVal = getNeighbor(NORTH,current.coord);
-            if (neighborVal == -1 || neighborVal > nextVal)
+            if (neighborVal == -1 || nextVal < neighborVal)
             {
                 queue_push(q,next);
                 updateFloodArray(next.coord,nextVal);
@@ -500,14 +501,14 @@ void floodFill() {
             }
             else
             {
-                nextVal -= current.streak;
+                nextVal += current.streak * STREAK_SCORE;
                 next.streak = current.streak + 1;
             }
             next.coord.x = current.coord.x-1;
             next.coord.y = current.coord.y;
             next.heading = WEST;
             neighborVal = getNeighbor(WEST,current.coord);
-            if (neighborVal == -1 || neighborVal > nextVal)
+            if (neighborVal == -1 || nextVal < neighborVal)
             {
                 queue_push(q,next);
                 updateFloodArray(next.coord,nextVal);
@@ -527,14 +528,14 @@ void floodFill() {
             }
             else
             {
-                nextVal -= current.streak;
+                nextVal += current.streak * STREAK_SCORE;
                 next.streak = current.streak + 1;
             }
             next.coord.x = current.coord.x;
             next.coord.y = current.coord.y - 1;
             next.heading = SOUTH;
             neighborVal = getNeighbor(SOUTH,current.coord);
-            if (neighborVal == -1 || neighborVal > nextVal)
+            if (neighborVal == -1 || nextVal < neighborVal)
             {
                 queue_push(q,next);
                 updateFloodArray(next.coord,nextVal);
@@ -554,14 +555,14 @@ void floodFill() {
             }
             else
             {
-                nextVal -= current.streak;
+                nextVal += current.streak * STREAK_SCORE;
                 next.streak = current.streak + 1;
             }
             next.coord.x = current.coord.x + 1;
             next.coord.y = current.coord.y;
             next.heading = EAST;
             neighborVal = getNeighbor(EAST,current.coord);
-            if (neighborVal == -1 || neighborVal > nextVal)
+            if (neighborVal == -1 || nextVal < neighborVal)
             {
                 queue_push(q,next);
                 updateFloodArray(next.coord,nextVal);
