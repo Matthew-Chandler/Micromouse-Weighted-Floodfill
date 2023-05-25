@@ -391,10 +391,16 @@ int getFloodArray(coord c)
     return floodArray[c.x][c.y];
 }
 
-// given coordinate, updates the respective cell's path value
+// given coordinate, updates the respective cell's path heading
 void updatePathArray(coord c, Heading h)
 {
     pathArray[c.x][c.y] = h;
+}
+
+// given cordinate, gets the respective cell's path heading
+Heading getPathArray(coord c)
+{
+    return pathArray[c.x][c.y];
 }
 
 // updates the floodfill array based on known walls
@@ -444,7 +450,7 @@ void floodFill() {
         
         // prints the floodfill number to the simulation screen
         char forSetText[6] = "";
-        sprintf(forSetText, "%d", floodArray[current.coord.x][current.coord.y]);
+        sprintf(forSetText, "%d", getFloodArray(current.coord));
         API_setText(current.coord.x,current.coord.y,forSetText);        
 
         // initializes values for calculating floodfills for neighbors
@@ -479,6 +485,7 @@ void floodFill() {
                 queue_push(q,next);
                 updateFloodArray(next.coord,nextVal);
                 updatePathArray(next.coord,SOUTH);
+                // API_setColor(next.coord.x,next.coord.y,'Y');
             }
         }
         
@@ -505,6 +512,7 @@ void floodFill() {
                 queue_push(q,next);
                 updateFloodArray(next.coord,nextVal);
                 updatePathArray(next.coord,EAST);
+                // API_setColor(next.coord.x,next.coord.y,'R');
             }
         }
         
@@ -531,6 +539,7 @@ void floodFill() {
                 queue_push(q,next);
                 updateFloodArray(next.coord,nextVal);
                 updatePathArray(next.coord,NORTH);
+                // API_setColor(next.coord.x,next.coord.y,'G');
             }
         }
 
@@ -557,6 +566,7 @@ void floodFill() {
                 queue_push(q,next);
                 updateFloodArray(next.coord,nextVal);
                 updatePathArray(next.coord,WEST);
+                // API_setColor(next.coord.x,next.coord.y,'B');
             }
         }
         
@@ -640,38 +650,6 @@ void updateWalls()
                 placeWall(SOUTH,c);
             break;
     }
-}
-
-// returns the heading to the next cell to visit based on floodfill values
-Heading nextHeading()
-{
-    // set minimum neighbor's floodfill value to very large number, expecting it to get overwritten later
-    int minNeighbor = 1000;
-    Heading minDirection;
-    coord c = {.x = currentX, .y = currentY};
-
-    // finds and returns the direction of the accessible neighbor with the lowest floodfill value
-    if ((!checkWall(NORTH,c)) && (floodArray[c.x][c.y + 1] < minNeighbor))
-    {
-        minNeighbor = floodArray[c.x][c.y + 1];
-        minDirection = NORTH;
-    }
-    if ((!checkWall(WEST,c)) && (floodArray[c.x - 1][c.y] < minNeighbor))
-    {
-        minNeighbor = floodArray[c.x - 1][c.y];
-        minDirection = WEST;
-    }
-    if ((!checkWall(SOUTH,c)) && (floodArray[c.x][c.y - 1] < minNeighbor))
-    {
-        minNeighbor = floodArray[c.x][c.y - 1];
-        minDirection = SOUTH;
-    }
-    if ((!checkWall(EAST,c)) && (floodArray[c.x + 1][c.y] < minNeighbor))
-    {
-        minNeighbor = floodArray[c.x + 1][c.y];
-        minDirection = EAST;
-    }    
-    return minDirection;
 }
 
 // increments currentX or currentY global variable based on the mouse's current heading
@@ -766,8 +744,8 @@ Action incrementRight()
 // based on updated wall and floodfill information, return the next action that the mouse should do
 Action nextAction()
 {
-    Heading turnTo = nextHeading();
     coord currentCoord = {.x = currentX, .y = currentY};
+    Heading turnTo = getPathArray(currentCoord);
     updateTravelArray(currentCoord);
     coord originalCoord = currentCoord;
 
@@ -776,7 +754,7 @@ Action nextAction()
     {
         int moveNumber = 0;
         while (checkTravelArray(currentCoord) == 1 && (!checkWall(turnTo,currentCoord))
-        && (getFloodArray(incrementCoord(turnTo,currentCoord,1)) < getFloodArray(currentCoord)))
+        && getPathArray(currentCoord) == currentHeading)
         {
             moveNumber++;
             currentCoord = incrementCoord(turnTo,currentCoord,1);
@@ -834,10 +812,49 @@ void checkDestination()
     }
 }
 
+void highlightPath()
+{
+    API_clearAllColor();
+    int x = 0;
+    int y = 0;
+    while (!(x >= 7 && x <=8 && y >= 7 && y <= 8))
+    {
+        Heading h = pathArray[x][y];
+        API_setColor(x,y,'w');
+        if (h == NORTH)
+            y++;
+        else if (h == SOUTH)
+            y--;
+        else if (h == WEST)
+            x--;
+        else
+            x++;
+    }
+
+    /*
+    x = currentX;
+    y = currentY;
+    while (!(x >= 7 && x <=8 && y >= 7 && y <= 8))
+    {
+        Heading h = pathArray[x][y];
+        API_setColor(x,y,'g');
+        if (h == NORTH)
+            y++;
+        else if (h == SOUTH)
+            y--;
+        else if (h == WEST)
+            x--;
+        else
+            x++;
+    }
+    */
+}
+
 // sends the mouse's recommended next action back to main
 Action solver() {
     checkDestination();
     updateWalls();    
     floodFill();
+    highlightPath();
     return nextAction();
 }
