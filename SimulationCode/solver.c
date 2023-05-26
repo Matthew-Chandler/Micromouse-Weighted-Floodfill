@@ -27,7 +27,7 @@ int queue_is_empty(queue q);
 int queue_size(queue q);
 void queue_clear(queue q);
 
-// queue type implentations
+// queue type implementation
 
 struct node {
     item_type data;
@@ -784,9 +784,20 @@ Action nextAction()
         API_turnRight();
         return incrementRight();
     }
+    else if ((currentHeading == NORTH && turnTo == WEST) || 
+        (currentHeading == WEST && turnTo == SOUTH) ||
+        (currentHeading == SOUTH && turnTo == EAST) ||
+        (currentHeading == EAST && turnTo == NORTH))
+    {
+        API_turnLeft();
+        return incrementLeft();
+    }
     else
     {
         API_turnLeft();
+        API_turnLeft();
+        debug_log("turned 180");
+        incrementLeft();
         return incrementLeft();
     }
 }
