@@ -1,10 +1,10 @@
-### Demo
+## Demo
 
 I've uploaded a short [![demo video](https://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://www.youtube.com/watch?v=JVsRV0mu0jg) to YouTube with a turn score of 5, tile score of 10, and a streak score of 0. Notice that near the beginning of the maze, the mouse opts to choose the slightly longer yellow path with less turns rather than the shorter green path with more turns.
 
 <img src="https://github.com/Matthew-Chandler/Micromouse-Weighted-Floodfill/assets/48606413/d102270b-bdf4-4a9a-8d4b-3fe2e14c06f5" width="500">
 
-### Understanding and changing weights
+## Understanding and changing weights
 
 To change the weights, change constants `TURN_SCORE`, `TILE_SCORE`, `STREAK_SCORE`, and `STREAK_MULTIPLIER` in **solver.c**. 
 
