@@ -4,12 +4,15 @@ This repo contains C code to complete the Micromouse floodfill simulator (https:
 
 ### Understanding and changing weights
 
-To change the weights, change constants ```TURN_SCORE```, ```TILE_SCORE```, and ```STREAK_SCORE``` in ```solver.c```. \
+To change the weights, change constants ```TURN_SCORE```, ```TILE_SCORE```, ```STREAK_SCORE```, and ```STREAK_MULTIPLIER``` in **solver.c**. \
 ```TURN_SCORE``` refers to the penalty for making a turn. \
 ```TILE_SCORE``` refers to the penalty for moving to an adjacent square.\
-```STREAK_SCORE``` refers to the penalty for moving to each additional consecutive square in a straight line. Since we typically want to reward the mouse moving in one diretion, ```STREAK_SCORE``` should be set to a negative number to act as a bonus. 
+```STREAK_SCORE``` refers to the penalty for moving to each additional consecutive square in a straight line. Since we typically want to reward the mouse moving in one diretion, ```STREAK_SCORE``` should be set to a negative number to act as a bonus. \
+```STREAK_MULTIPLIER``` refers to the ramping penalty of moving another consecutive square in a streak. Each additional square in a streak will increase this penalty until the streak is broken. Like ```STREAK_SCORE```, this should be negative.
 
-For example, if ```TILE_SCORE``` is set to 10 and ```STREAK_SCORE``` is set to -1, moving two squares in one direction is worth (10\*2)-1=19, moving three squares in one direction is worth (10\*3)-1-2=27, moving four squares in one direction is worth (10\*4)-1-2-3=34, as so on.
+For example, if ```TILE_SCORE``` is set to 10, ```STREAK_SCORE``` is set to -1, and ```STREAK_MULTIPLIER``` is set to -1, moving two squares in one direction is worth (10\*2)-1=19, moving three squares in one direction is worth (10\*3)-1-2=27, moving four squares in one direction is worth (10\*4)-1-2-3=34, and so on. If n is the number of squares moved in one direction, the general formula becomes ```(TILE_SCORE * n) + [STREAK_MULTIPLIER * (n - 2)(n - 1) / 2)] + (STREAK_SCORE * n)```. 
+
+If ```STREAK_MULTIPLIER``` is instead 0, moving two squares in one direction is worth (10\*2)-1=19, moving three squares in one direction is worth (10\*3)-1-1=28, moving four squares in one direction is worth (10\*4)-1-1-1=37, and so on.
 
 ### Demo
 
