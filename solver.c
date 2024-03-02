@@ -149,6 +149,7 @@ Heading currentHeading = NORTH;
 const int TURN_SCORE = 0;
 const int TILE_SCORE = 1;
 const int STREAK_SCORE = 0;
+const int STREAK_MULTIPLIER = 0;
 
 // watch out when looking at the following arrays, remember that in 2D text form:
 // x values are displayed vertically and y values are displayed horizontally.
@@ -470,7 +471,7 @@ void floodFill() {
             // if the mouse doesn't need to turn, records that is is on a straight streak
             else
             {
-                nextVal += current.streak * STREAK_SCORE;
+                nextVal += (STREAK_MULTIPLIER * current.streak) * STREAK_SCORE;
                 next.streak = current.streak + 1;
             }
 
