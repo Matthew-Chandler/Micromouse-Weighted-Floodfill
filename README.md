@@ -1,7 +1,3 @@
-### Overview
-
-This repo contains C code to complete the Micromouse floodfill simulator (https://github.com/mackorone/mms) using a weighted floodfill algorithm. Unlike traditional floodfill, which weights adjacent squares equally, this weighted floodfill algorithm can, in addition, weigh turns and streaks of straight conseuctive squares.
-
 ### Understanding and changing weights
 
 To change the weights, change constants ```TURN_SCORE```, ```TILE_SCORE```, ```STREAK_SCORE```, and ```STREAK_MULTIPLIER``` in **solver.c**. \
