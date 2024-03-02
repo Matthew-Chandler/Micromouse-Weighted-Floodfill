@@ -471,7 +471,7 @@ void floodFill() {
             // if the mouse doesn't need to turn, records that is is on a straight streak
             else
             {
-                nextVal += (STREAK_MULTIPLIER * current.streak) * STREAK_SCORE;
+                nextVal += (STREAK_MULTIPLIER * (current.streak-1)) + STREAK_SCORE;
                 next.streak = current.streak + 1;
             }
 
@@ -502,7 +502,7 @@ void floodFill() {
             }
             else
             {
-                nextVal += current.streak * STREAK_SCORE;
+                nextVal += (STREAK_MULTIPLIER * (current.streak-1)) + STREAK_SCORE;
                 next.streak = current.streak + 1;
             }
             next.coord.x = current.coord.x-1;
@@ -529,7 +529,7 @@ void floodFill() {
             }
             else
             {
-                nextVal += current.streak * STREAK_SCORE;
+                nextVal += (STREAK_MULTIPLIER * (current.streak-1)) + STREAK_SCORE;
                 next.streak = current.streak + 1;
             }
             next.coord.x = current.coord.x;
@@ -556,7 +556,7 @@ void floodFill() {
             }
             else
             {
-                nextVal += current.streak * STREAK_SCORE;
+                nextVal += (STREAK_MULTIPLIER * (current.streak-1)) + STREAK_SCORE;
                 next.streak = current.streak + 1;
             }
             next.coord.x = current.coord.x + 1;
