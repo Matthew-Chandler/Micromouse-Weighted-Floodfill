@@ -1,7 +1,7 @@
 #ifndef QUEUES_H
 #define QUEUES_H
 
-#include <solver.h>
+#include "solver.h"
 
 typedef struct coord {
     int x;
