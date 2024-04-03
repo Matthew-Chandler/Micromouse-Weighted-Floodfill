@@ -1,24 +1,15 @@
 #include "solver.h"
 #include "API.h"
 #include "queues.h"
+#include "constants.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-// global variable declarations and assignments
-
-int target = 1; // 0 if going to start, 1 if going to center
-int currentX = 0;
-int currentY = 0;
-Heading currentHeading = NORTH;
-
-const int TURN_SCORE = 0;
-const int TILE_SCORE = 1;
-const int STREAK_SCORE = 0;
-const int STREAK_MULTIPLIER = 0;
-
-// if you want the mouse to reset to the start once it reaches the middle, set RESET_AT_CENTER to 1
-// otherwise, set it to 0 if you want it to make its way back to the start
-const unsigned char RESET_AT_CENTER = 0;
+// define starting assignment
+int target = STARTING_TARGET; 
+int currentX = STARTING_X;
+int currentY = STARTING_Y;
+Heading currentHeading = STARTING_HEADING;
 
 // watch out when looking at the following arrays, remember that in 2D text form:
 // x values are displayed vertically and y values are displayed horizontally.

@@ -6,7 +6,7 @@ I've uploaded a short [![demo video](https://img.youtube.com/vi/YOUTUBE_VIDEO_ID
 
 ## Understanding and changing weights
 
-To change the weights, change constants `TURN_SCORE`, `TILE_SCORE`, `STREAK_SCORE`, and `STREAK_MULTIPLIER` in **solver.c**. 
+To change the weights, change constants `TURN_SCORE`, `TILE_SCORE`, `STREAK_SCORE`, and `STREAK_MULTIPLIER` in **constants.h**. 
 
 `TURN_SCORE` refers to the penalty for making a turn. \
 `TILE_SCORE` refers to the penalty for moving to an adjacent square.\
