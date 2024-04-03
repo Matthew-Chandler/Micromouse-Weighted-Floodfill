@@ -609,6 +609,10 @@ Action incrementRight()
 // based on updated wall and floodfill information, return the next action that the mouse should do
 Action nextAction()
 {
+    if (target && currentX >= 7 && currentX <=8 && currentY >= 7 && currentY <= 8) // if going to center
+        if (STAY_AT_CENTER)
+            return IDLE;
+
     coord currentCoord = {.x = currentX, .y = currentY};
     Heading turnTo = getPathArray(currentCoord);
     updateTravelArray(currentCoord);
@@ -678,7 +682,7 @@ void checkDestination()
                     currentY = 0;
                     currentHeading = NORTH;
                 }
-                else
+                else if (!STAY_AT_CENTER)
                     target = 0;             
             }
     }
