@@ -151,6 +151,10 @@ const int TILE_SCORE = 1;
 const int STREAK_SCORE = 0;
 const int STREAK_MULTIPLIER = 0;
 
+// if you want the mouse to reset to the start once it reaches the middle, set RESET_AT_CENTER to 1
+// otherwise, set it to 0 if you want it to make its way back to the start
+const unsigned char RESET_AT_CENTER = 0;
+
 // watch out when looking at the following arrays, remember that in 2D text form:
 // x values are displayed vertically and y values are displayed horizontally.
 // in addition, the x values are displayed upside down compared to how they are displayed in
@@ -408,7 +412,10 @@ Heading getPathArray(coord c)
 // updates the floodfill array based on known walls
 void floodFill() {
     // set non-goal values to blank so that the floodfill array can be recalculated
-    resetToCenter();
+    if (target)
+        resetToCenter();
+    else
+        resetToStart();
 
     // declare/initialize relevant variables for queue for floodfill algorithm
     queue q = queue_create();
@@ -809,10 +816,14 @@ void checkDestination()
     {
         if (currentX >= 7 && currentX <=8 && currentY >= 7 && currentY <= 8)
             {
-                API_ackReset();
-                currentX = 0;
-                currentY = 0;
-                currentHeading = NORTH;
+                if (RESET_AT_CENTER) {
+                    API_ackReset();
+                    currentX = 0;
+                    currentY = 0;
+                    currentHeading = NORTH;
+                }
+                else
+                    target = 0;             
             }
     }
     else
@@ -825,39 +836,40 @@ void checkDestination()
 void highlightPath()
 {
     API_clearAllColor();
-    int x = 0;
-    int y = 0;
-    while (!(x >= 7 && x <=8 && y >= 7 && y <= 8))
-    {
-        Heading h = pathArray[x][y];
-        API_setColor(x,y,'w');
-        if (h == NORTH)
-            y++;
-        else if (h == SOUTH)
-            y--;
-        else if (h == WEST)
-            x--;
-        else
-            x++;
+    if (target) {
+        int x = 0;
+        int y = 0;
+        while (!(x >= 7 && x <=8 && y >= 7 && y <= 8))
+        {
+            Heading h = pathArray[x][y];
+            API_setColor(x,y,'w');
+            if (h == NORTH)
+                y++;
+            else if (h == SOUTH)
+                y--;
+            else if (h == WEST)
+                x--;
+            else
+                x++;
+        }
     }
-
-    /*
-    x = currentX;
-    y = currentY;
-    while (!(x >= 7 && x <=8 && y >= 7 && y <= 8))
-    {
-        Heading h = pathArray[x][y];
-        API_setColor(x,y,'g');
-        if (h == NORTH)
-            y++;
-        else if (h == SOUTH)
-            y--;
-        else if (h == WEST)
-            x--;
-        else
-            x++;
-    }
-    */
+    else {
+        int x = 7;
+        int y = 7;
+        while (!(x == 0 && y == 0))
+        {
+            Heading h = pathArray[x][y];
+            API_setColor(x,y,'w');
+            if (h == NORTH)
+                y++;
+            else if (h == SOUTH)
+                y--;
+            else if (h == WEST)
+                x--;
+            else
+                x++;
+        }
+    }  
 }
 
 // sends the mouse's recommended next action back to main
