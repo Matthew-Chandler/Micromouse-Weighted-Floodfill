@@ -9,8 +9,7 @@
 
 // define starting position
 unsigned char target = STARTING_TARGET; 
-int currentX = STARTING_X;
-int currentY = STARTING_Y;
+coord currentXY = {STARTING_X, STARTING_Y};
 Heading currentHeading = STARTING_HEADING;
 
 /* Arrays and Array Helper Functions */
@@ -95,7 +94,7 @@ Action turnRight() {
 
 // returns whether the mouse is in the target
 unsigned char mouseInGoal() {
-    return (target == 1 && (currentX >= LOWER_X_GOAL && currentX <= UPPER_X_GOAL && currentY >= LOWER_Y_GOAL && currentY <= UPPER_Y_GOAL));
+    return (target == 1 && (currentXY.x >= LOWER_X_GOAL && currentXY.x <= UPPER_X_GOAL && currentXY.y >= LOWER_Y_GOAL && currentXY.y <= UPPER_Y_GOAL));
 }
 
 // given heading and coordinates, returns the floodfill value of the corresponding neighbor cell.
@@ -209,11 +208,10 @@ void placeWall(Heading heading, coord c) {
 // checks for and then updates the walls for the current cell
 void updateWalls()
 {
-    coord c = {currentX, currentY};
     // based on the current heading, places walls at the respective locations
-    if (API_wallFront()) placeWall(currentHeading,c);
-    if (API_wallLeft()) placeWall((currentHeading+1)%4,c);
-    if (API_wallRight()) placeWall((currentHeading-1)%4,c);
+    if (API_wallFront()) placeWall(currentHeading,currentXY);
+    if (API_wallLeft()) placeWall((currentHeading+1)%4,currentXY);
+    if (API_wallRight()) placeWall((currentHeading-1)%4,currentXY);
 }
 
 // based on updated wall and floodfill information, return the next action that the mouse should do
@@ -223,22 +221,19 @@ Action nextAction()
     if (target && mouseInGoal() && STAY_AT_CENTER)
         return IDLE;
 
-    coord currentCoord = {currentX, currentY};
-    Heading newHeading = getPathArray(currentCoord);
-    updateTravelArray(currentCoord);
-    coord originalCoord = currentCoord;
+    Heading newHeading = getPathArray(currentXY);
+    updateTravelArray(currentXY);
+    coord originalCoord = currentXY;
 
     // moves forward if the mouse is already facing the correct heading
     if (newHeading == currentHeading) {
         int moveNumber = 0;
-        while (checkTravelArray(currentCoord) == 1 && (!checkWall(newHeading,currentCoord))
-        && getPathArray(currentCoord) == currentHeading) {
+        while (checkTravelArray(currentXY) == 1 && (!checkWall(newHeading,currentXY))
+        && getPathArray(currentXY) == currentHeading) {
             moveNumber++;
-            updateTravelArray(currentCoord);
-            currentCoord = incrementCoord(newHeading,currentCoord,1);
+            updateTravelArray(currentXY);
+            currentXY = incrementCoord(newHeading,currentXY,1);
         } 
-        currentX = currentCoord.x;
-        currentY = currentCoord.y;
 
         char forSetText[4] = "";
         sprintf(forSetText, "%d", moveNumber);
@@ -267,14 +262,13 @@ void checkDestination()
         if (mouseInGoal()) {
             if (RESET_AT_CENTER) {
                 API_ackReset();
-                currentX = 0;
-                currentY = 0;
+                currentXY = (coord){0,0};
                 currentHeading = NORTH;
             }
             else if (!STAY_AT_CENTER)
-                target = 0;             
-            }
-    } else if (currentX == 0 && currentY == 0)
+                target = 0;       
+        }
+    } else if (currentXY.x == 0 && currentXY.y == 0)
         target = 1;
 }
 
@@ -297,8 +291,8 @@ void highlightPath()
             else
                 x++;
         }
-    }
-    else {
+        API_setColor(x,y,'w');
+    } else {
         int x = 7;
         int y = 7;
         while (!(x == 0 && y == 0))
@@ -314,6 +308,7 @@ void highlightPath()
             else
                 x++;
         }
+        API_setColor(x,y,'w');
     }  
 }
 
