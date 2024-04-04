@@ -278,38 +278,32 @@ void highlightPath()
     if (target) {
         int x = 0;
         int y = 0;
-        while (!(x >= 7 && x <=8 && y >= 7 && y <= 8))
-        {
-            Heading h = pathArray[x][y];
+        while (!(x >= 7 && x <=8 && y >= 7 && y <= 8)) {
             API_setColor(x,y,'w');
-            if (h == NORTH)
-                y++;
-            else if (h == SOUTH)
-                y--;
-            else if (h == WEST)
-                x--;
-            else
-                x++;
+            switch (pathArray[x][y]) {
+                case NORTH: y++; break;
+                case WEST: x--; break;
+                case SOUTH: y--; break;
+                case EAST: x++; break;
+            }
         }
-        API_setColor(x,y,'w');
     } else {
         int x = 7;
         int y = 7;
-        while (!(x == 0 && y == 0))
-        {
-            Heading h = pathArray[x][y];
+        while (!(x == 0 && y == 0)) {
             API_setColor(x,y,'w');
-            if (h == NORTH)
-                y++;
-            else if (h == SOUTH)
-                y--;
-            else if (h == WEST)
-                x--;
-            else
-                x++;
+            switch (pathArray[x][y]) {
+                case NORTH: y++; break;
+                case WEST: x--; break;
+                case SOUTH: y--; break;
+                case EAST: x++; break;
+            }
         }
-        API_setColor(x,y,'w');
     }  
+    for (int x = LOWER_X_GOAL; x <= UPPER_X_GOAL; x++)
+        for (int y = LOWER_Y_GOAL; y <= UPPER_Y_GOAL; y++)  
+            API_setColor(x,y,'w');
+    API_setColor(STARTING_X,STARTING_Y,'w');
 }
 
 // sends the mouse's recommended next action back to main
