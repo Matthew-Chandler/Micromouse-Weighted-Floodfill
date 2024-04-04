@@ -311,6 +311,7 @@ Action solver() {
     checkDestination();
     updateWalls();    
     floodFill();
-    highlightPath();
+    if (HIGHLIGHT_PATH)
+        highlightPath();
     return nextAction();
 }

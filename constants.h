@@ -25,6 +25,7 @@ const unsigned char STAY_AT_CENTER = 0;
 #define UPPER_Y_GOAL 8
 
 // highlight path
+const unsigned char HIGHLIGHT_PATH = 0;
 
 // DO NOT TOUCH UNLESS YOU KNOW WHAT YOU ARE DOING
 #define OUT_OF_BOUNDS -2
