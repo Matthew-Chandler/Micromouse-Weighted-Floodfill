@@ -3,17 +3,6 @@
 
 #include "solver.h"
 
-typedef struct coord {
-    int x;
-    int y;
-} coord;
-
-typedef struct neighbor {
-    coord coord;
-    Heading heading;
-    int streak;
-} neighbor;
-
 typedef neighbor item_type;
 typedef struct _queue* queue;
 queue queue_create();

@@ -14,8 +14,20 @@ const unsigned char STAY_AT_CENTER = 0;
 
 // starting position. keep it the same for all regular micromouse rules
 #define STARTING_TARGET 1; // 0 if going to start, 1 if going to center
-#define STARTING_X 0;
-#define STARTING_Y 0;
 #define STARTING_HEADING NORTH;
+#define STARTING_X 0
+#define STARTING_Y 0
+
+// goal position, assuming the goal is a square
+#define LOWER_X_GOAL 7
+#define LOWER_Y_GOAL 7
+#define UPPER_X_GOAL 8
+#define UPPER_Y_GOAL 8
+
+// highlight path
+
+// DO NOT TOUCH UNLESS YOU KNOW WHAT YOU ARE DOING
+#define OUT_OF_BOUNDS -2
+#define NOT_YET_SET -1
 
 #endif
