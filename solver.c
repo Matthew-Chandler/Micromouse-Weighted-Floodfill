@@ -256,6 +256,7 @@ Action nextAction()
     }
 }
 
+// checks if the mouse has reached its target
 void checkDestination()
 {
     if (target) {
@@ -268,10 +269,11 @@ void checkDestination()
             else if (!STAY_AT_CENTER)
                 target = 0;       
         }
-    } else if (currentXY.x == 0 && currentXY.y == 0)
+    } else if (currentXY.x == STARTING_X && currentXY.y == STARTING_Y)
         target = 1;
 }
 
+// highlights the optimal path for the mouse
 void highlightPath()
 {
     API_clearAllColor();
@@ -300,6 +302,7 @@ void highlightPath()
             }
         }
     }  
+    // highlight start and goal values
     for (int x = LOWER_X_GOAL; x <= UPPER_X_GOAL; x++)
         for (int y = LOWER_Y_GOAL; y <= UPPER_Y_GOAL; y++)  
             API_setColor(x,y,'w');
@@ -311,7 +314,6 @@ Action solver() {
     checkDestination();
     updateWalls();    
     floodFill();
-    if (HIGHLIGHT_PATH)
-        highlightPath();
+    if (HIGHLIGHT_PATH) highlightPath();
     return nextAction();
 }
