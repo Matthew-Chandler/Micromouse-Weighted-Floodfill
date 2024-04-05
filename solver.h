@@ -16,5 +16,6 @@ typedef struct neighbor {
 } neighbor;
 
 Action solver();
+void generateInitialWalls();
 
 #endif

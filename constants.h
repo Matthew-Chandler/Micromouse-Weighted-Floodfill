@@ -19,13 +19,18 @@ const unsigned char STAY_AT_CENTER = 0;
 #define STARTING_Y 0
 
 // goal position, assuming the goal is a square
+// when setting this, remember that the maze is zero-indexed!
 #define LOWER_X_GOAL 7
 #define LOWER_Y_GOAL 7
 #define UPPER_X_GOAL 8
 #define UPPER_Y_GOAL 8
 
+// maze size
+#define MAZE_WIDTH 16
+#define MAZE_HEIGHT 16
+
 // highlight path
-const unsigned char HIGHLIGHT_PATH = 0;
+const unsigned char HIGHLIGHT_PATH = 1;
 
 // DO NOT TOUCH UNLESS YOU KNOW WHAT YOU ARE DOING
 #define OUT_OF_BOUNDS -2

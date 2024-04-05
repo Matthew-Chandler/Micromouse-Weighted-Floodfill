@@ -15,15 +15,15 @@ Heading currentHeading = STARTING_HEADING;
 /* Arrays and Array Helper Functions */
 
 // keeps track of the known vertical walls in the maze
-int verticalWalls[17][16] = {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}};
+int verticalWalls[MAZE_WIDTH+1][MAZE_HEIGHT] = {{0}};
 // keeps track of horizontal walls in the maze
-int horizontalWalls[16][17] = {{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1}};
+int horizontalWalls[MAZE_WIDTH][MAZE_HEIGHT+1] = {{0}};
 // keeps track of current floodfill values
-int floodArray[16][16];
+int floodArray[MAZE_WIDTH][MAZE_HEIGHT];
 // keeps track of the path the car should take after a floodfill iteration for each cell of the maze
-Heading pathArray[16][16] = {{NORTH}};
+Heading pathArray[MAZE_WIDTH][MAZE_HEIGHT] = {{NORTH}};
 // keeps track of all of the cells that the mouse has visited
-int travelArray[16][16] = {{0}};
+int travelArray[MAZE_WIDTH][MAZE_HEIGHT] = {{0}};
 
 // given a coord, checks to see if the mouse has visited a certain cell before
 int checkTravelArray(coord c) {return travelArray[c.x][c.y];}
@@ -44,8 +44,8 @@ Heading getPathArray(coord c) {return pathArray[c.x][c.y];}
 void resetFloodArray()
 {
     // set the entire flood array to blank values (-1)
-    for (int x = 0; x < 16; x++)
-        for (int y = 0; y < 16; y++)
+    for (int x = 0; x < MAZE_WIDTH; x++)
+        for (int y = 0; y < MAZE_HEIGHT; y++)
             floodArray[x][y] = -1;
     // set desired goal values 
     if (target) // target is goal (center)
@@ -152,8 +152,8 @@ void floodFill() {
     queue q = queue_create();
 
     // iterate through the 2D array, find goal values and add them to the queue
-    for (int x = 0; x < 16; x++) {
-        for (int y = 0; y < 16; y++) {
+    for (int x = 0; x < MAZE_WIDTH; x++) {
+        for (int y = 0; y < MAZE_HEIGHT; y++) {
             if (floodArray[x][y] == 0) {
                 // for the starting goal values, it doesn't matter which direction you approach them from.
                 // as such, they should be oriented from all directions
@@ -202,6 +202,17 @@ void placeWall(Heading heading, coord c) {
             verticalWalls[c.x+1][c.y] = 1;
             API_setWall(c.x,c.y,'e');
             return;
+    }
+}
+
+void generateInitialWalls() {
+    for (int x = 0; x < MAZE_WIDTH; x++) {
+        placeWall(SOUTH,(coord){x,0});
+        placeWall(NORTH,(coord){x,MAZE_HEIGHT-1});
+    }
+    for (int y = 0; y < MAZE_WIDTH; y++) {
+        placeWall(WEST,(coord){0,y});
+        placeWall(EAST,(coord){MAZE_WIDTH-1,y});
     }
 }
 
@@ -278,9 +289,9 @@ void highlightPath()
 {
     API_clearAllColor();
     if (target) {
-        int x = 0;
-        int y = 0;
-        while (!(x >= 7 && x <=8 && y >= 7 && y <= 8)) {
+        int x = STARTING_X;
+        int y = STARTING_Y;
+        while (!(x >= LOWER_X_GOAL && x <= UPPER_X_GOAL && y >= LOWER_Y_GOAL && y <= UPPER_Y_GOAL)) {
             API_setColor(x,y,'w');
             switch (pathArray[x][y]) {
                 case NORTH: y++; break;
@@ -290,9 +301,9 @@ void highlightPath()
             }
         }
     } else {
-        int x = 7;
-        int y = 7;
-        while (!(x == 0 && y == 0)) {
+        int x = LOWER_X_GOAL;
+        int y = LOWER_Y_GOAL;
+        while (!(x == STARTING_X && y == STARTING_Y)) {
             API_setColor(x,y,'w');
             switch (pathArray[x][y]) {
                 case NORTH: y++; break;

@@ -8,6 +8,7 @@
 // to the simulator.
 int main(int argc, char* argv[]) {
     debug_log("Running...");
+    generateInitialWalls();
     while (1) {
         Action nextMove = solver();
     }
