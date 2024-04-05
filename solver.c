@@ -210,7 +210,7 @@ void generateInitialWalls() {
         placeWall(SOUTH,(coord){x,0});
         placeWall(NORTH,(coord){x,MAZE_HEIGHT-1});
     }
-    for (int y = 0; y < MAZE_WIDTH; y++) {
+    for (int y = 0; y < MAZE_HEIGHT; y++) {
         placeWall(WEST,(coord){0,y});
         placeWall(EAST,(coord){MAZE_WIDTH-1,y});
     }
