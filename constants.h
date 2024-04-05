@@ -24,8 +24,18 @@ const unsigned char STAY_AT_CENTER = 0;
 #define UPPER_X_GOAL 8
 #define UPPER_Y_GOAL 8
 
+// maze size
+#define MAZE_WIDTH 16
+#define MAZE_HEIGHT 16
+
+// walls
+const unsigned char NORTH_WALL = 1;
+const unsigned char WEST_WALL = 2;
+const unsigned char SOUTH_WALL = 4;
+const unsigned char EAST_WALL = 8;
+
 // highlight path
-const unsigned char HIGHLIGHT_PATH = 0;
+const unsigned char HIGHLIGHT_PATH = 1;
 
 // DO NOT TOUCH UNLESS YOU KNOW WHAT YOU ARE DOING
 #define OUT_OF_BOUNDS -2

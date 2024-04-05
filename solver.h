@@ -15,6 +15,8 @@ typedef struct neighbor {
     int streak;
 } neighbor;
 
+void generateWallArray();
 Action solver();
+void placeWall();
 
 #endif

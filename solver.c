@@ -14,16 +14,14 @@ Heading currentHeading = STARTING_HEADING;
 
 /* Arrays and Array Helper Functions */
 
-// keeps track of the known vertical walls in the maze
-int verticalWalls[17][16] = {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}};
-// keeps track of horizontal walls in the maze
-int horizontalWalls[16][17] = {{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1}};
+// keeps track of all walls in the maze
+unsigned char wallArray[MAZE_WIDTH][MAZE_HEIGHT];
 // keeps track of current floodfill values
-int floodArray[16][16];
+int floodArray[MAZE_WIDTH][MAZE_HEIGHT];
 // keeps track of the path the car should take after a floodfill iteration for each cell of the maze
-Heading pathArray[16][16] = {{NORTH}};
+Heading pathArray[MAZE_WIDTH][MAZE_HEIGHT] = {{NORTH}};
 // keeps track of all of the cells that the mouse has visited
-int travelArray[16][16] = {{0}};
+int travelArray[MAZE_WIDTH][MAZE_HEIGHT] = {{0}};
 
 // given a coord, checks to see if the mouse has visited a certain cell before
 int checkTravelArray(coord c) {return travelArray[c.x][c.y];}
@@ -34,18 +32,38 @@ void updateFloodArray(coord c, int val) {floodArray[c.x][c.y] = val;}
 // given coordinate, gets the respective cell's floodfill value
 int getFloodArray(coord c) {return floodArray[c.x][c.y];}
 // given coordinate, updates the respective cell's path heading
-void updatePathArray(coord c, Heading h) {pathArray[c.x][c.y] = h;}
+void updatePathArray(coord c, Heading h) {
+    pathArray[c.x][c.y] = h;     
+}
 // given cordinate, gets the respective cell's path heading
 Heading getPathArray(coord c) {return pathArray[c.x][c.y];}
 
 /* Floodfill Functions */
 
+void generateWallArray() {
+    for (int x = 0; x < MAZE_WIDTH; x++)
+        for (int y = 0; y < MAZE_HEIGHT; y++)
+            wallArray[x][y] = 0;
+    for (int x = 0; x < MAZE_WIDTH; x++) {
+        placeWall(SOUTH,(coord){x,0});
+        placeWall(NORTH,(coord){x,MAZE_HEIGHT-1});
+        // wallArray[x][0] = wallArray[x][0] | 0b0100; // add wall to southern edge of maze
+        // wallArray[x][MAZE_HEIGHT-1] = wallArray[x][MAZE_HEIGHT-1] | 0b0001; // add wall to nothern edge of maze
+    }
+    for (int y = 0; y < MAZE_WIDTH; y++) {
+        placeWall(WEST,(coord){0,y});
+        placeWall(EAST,(coord){MAZE_WIDTH-1,y});
+        // wallArray[0][y] = wallArray[0][y] | 0b0010; // add wall to western edge of maze
+        // wallArray[MAZE_WIDTH-1][y] = wallArray[MAZE_WIDTH-1][y] | 0b1000; // add wall to eastern edge of maze
+    }
+}
+
 // resets the floodfill array to target the center as destination
 void resetFloodArray()
 {
     // set the entire flood array to blank values (-1)
-    for (int x = 0; x < 16; x++)
-        for (int y = 0; y < 16; y++)
+    for (int x = 0; x < MAZE_WIDTH; x++)
+        for (int y = 0; y < MAZE_HEIGHT; y++)
             floodArray[x][y] = -1;
     // set desired goal values 
     if (target) // target is goal (center)
@@ -57,13 +75,13 @@ void resetFloodArray()
 }
 
 // given heading and coordinate, check if there is a wall on that side of the cell
-int checkWall(Heading heading, coord c) {
+unsigned char checkWall(Heading heading, coord c) {
     switch (heading) {
-        case NORTH: return horizontalWalls[c.x][c.y+1];
-        case WEST: return verticalWalls[c.x][c.y];
-        case SOUTH: return horizontalWalls[c.x][c.y];
-        case EAST: return verticalWalls[c.x+1][c.y];
-    }
+        case NORTH: return wallArray[c.x][c.y] & NORTH_WALL;
+        case WEST: return wallArray[c.x][c.y] & WEST_WALL;
+        case SOUTH: return wallArray[c.x][c.y] & SOUTH_WALL;
+        case EAST: return wallArray[c.x][c.y] & EAST_WALL;
+    } 
 }
 
 // Increments coord in the direction of the heading by input integer, then returns updated coord
@@ -117,8 +135,8 @@ int getNeighbor(Heading heading, coord c)
     }
 }
 
-neighbor generateNeighbor(queue q, Heading heading, neighbor current, int currentVal) {
-    if (!checkWall(heading,current.coord)) {
+void generateNeighbor(queue q, Heading heading, neighbor current, int currentVal) {
+    if (!checkWall(heading,current.coord)) { // if there is not a wall in the current heading
         int nextVal = currentVal + TILE_SCORE;
         neighbor next;
         // checks if the mouse would have to turn to go north from current cell
@@ -152,8 +170,8 @@ void floodFill() {
     queue q = queue_create();
 
     // iterate through the 2D array, find goal values and add them to the queue
-    for (int x = 0; x < 16; x++) {
-        for (int y = 0; y < 16; y++) {
+    for (int x = 0; x < MAZE_WIDTH; x++) {
+        for (int y = 0; y < MAZE_HEIGHT; y++) {
             if (floodArray[x][y] == 0) {
                 // for the starting goal values, it doesn't matter which direction you approach them from.
                 // as such, they should be oriented from all directions
@@ -178,7 +196,7 @@ void floodFill() {
         generateNeighbor(q,NORTH,current,currentVal);
         generateNeighbor(q,WEST,current,currentVal);
         generateNeighbor(q,SOUTH,current,currentVal);
-        generateNeighbor(q,EAST,current,currentVal);        
+        generateNeighbor(q,EAST,current,currentVal);
     }
 }
 
@@ -187,27 +205,34 @@ void placeWall(Heading heading, coord c) {
     // sets a wall in the wall arrays
     switch (heading) {
         case NORTH:
-            horizontalWalls[c.x][c.y+1] = 1;
+            wallArray[c.x][c.y] = wallArray[c.x][c.y] | NORTH_WALL;
+            if (c.y < MAZE_HEIGHT - 1)
+                wallArray[c.x][c.y+1] |= SOUTH_WALL;
             API_setWall(c.x,c.y,'n');
             return;
         case WEST:
-            verticalWalls[c.x][c.y] = 1;
+            wallArray[c.x][c.y] = wallArray[c.x][c.y] | WEST_WALL;
+            if (c.x > 0)
+                wallArray[c.x-1][c.y] |= EAST_WALL;
             API_setWall(c.x,c.y,'w');
             return;
         case SOUTH:
-            horizontalWalls[c.x][c.y] = 1;
+            wallArray[c.x][c.y] = wallArray[c.x][c.y] | SOUTH_WALL;
+            if (c.y > 0)
+                wallArray[c.x][c.y-1] |= NORTH_WALL;
             API_setWall(c.x,c.y,'s');
             return;
         case EAST:
-            verticalWalls[c.x+1][c.y] = 1;
+            wallArray[c.x][c.y] = wallArray[c.x][c.y] | EAST_WALL;
+            if (c.x < MAZE_WIDTH - 1)
+                wallArray[c.x+1][c.y] |= WEST_WALL;
             API_setWall(c.x,c.y,'e');
             return;
     }
 }
 
 // checks for and then updates the walls for the current cell
-void updateWalls()
-{
+void updateWalls() {
     // based on the current heading, places walls at the respective locations
     if (API_wallFront()) placeWall(currentHeading,currentXY);
     if (API_wallLeft()) placeWall((currentHeading+1)%4,currentXY);
@@ -235,9 +260,9 @@ Action nextAction()
             currentXY = incrementCoord(newHeading,currentXY,1);
         } 
 
-        char forSetText[4] = "";
-        sprintf(forSetText, "%d", moveNumber);
-        debug_log(forSetText);
+        // char forSetText[20] = "";
+        // sprintf(forSetText, "%d %d", newHeading, currentHeading);
+        // debug_log(forSetText);
 
         for (int i = 0; i < moveNumber; i++)
             API_moveForward();
